@@ -427,6 +427,50 @@ const sourcePaybackHigh = 4;
 const installationTechniciansLow = 2;
 const installationTechniciansHigh = 4;
 
+const partnerLogos = [
+  { name: 'NVIDIA', role: 'AI Technology Provider', src: '/logos/Nvidia_logo.png' },
+  { name: 'BBC', role: 'Global Media Coverage', src: '/logos/bbc.png' },
+  { name: 'AIBase Nig', role: 'Regional Tech Authority', src: '/logos/aibase.png' },
+  { name: 'Conflow Power Group', role: 'Global Licensor', src: '/logos/conflow-logo-png.png' },
+  { name: 'Katsina State Government', role: '50,000-unit installed base', src: '/logos/katsina.png' },
+  { name: 'Republic of Senegal', role: '175,000-unit strategic proposal' },
+];
+
+const articleHub = [
+  {
+    kicker: 'Distributed AI Infrastructure',
+    title: 'Nigeria: Scaling to 13.75 PetaOPS of Distributed Compute',
+    metric: '50,000 iLamps as sovereign edge nodes',
+    summary:
+      'Nigeria becomes the proof base for iLamp as distributed AI infrastructure: every installed unit combines 67 TOPS edge computing, renewable autonomy, local sensing, and revenue services inside a street-level sovereign data center.',
+  },
+  {
+    kicker: 'Sovereign Data Centers',
+    title: 'Senegal Vision 2050: Implementing 48.1 ExaOPS of Sovereign AI',
+    metric: '175,000-node Infrastructure-as-a-Service proposal',
+    summary:
+      'Senegal is framed as a Green Utility PPP and sovereign data center network, using Infrastructure-as-a-Service economics to scale autonomous smart city infrastructure without converting the rollout into direct sovereign debt.',
+  },
+];
+
+const pppStages = [
+  { stage: '01', title: 'Identification', image: '/images/ppp-lifecycle/stage-01-introduction.png', detail: 'Map the sovereign corridor, demand center, installed-base economics, and local operating partner.' },
+  { stage: '02', title: 'Feasibility', image: '/images/ppp-lifecycle/stage-02-feasibility.png', detail: 'Model power autonomy, 67 TOPS edge workloads, municipal data demand, and site-level capex.' },
+  { stage: '03', title: 'Term Sheet', image: '/images/ppp-lifecycle/stage-03-term-sheet.png', detail: 'Convert compute, WiFi, advertising, analytics, and safety services into a bankable revenue stack.' },
+  { stage: '04', title: 'MOU', image: '/images/ppp-lifecycle/stage-04-mou.png', detail: 'Formalize public-private alignment, sovereign data rights, deployment access, and operating mandate.' },
+  { stage: '05', title: 'SPV Setup', image: '/images/ppp-lifecycle/stage-05-spv-setup.png', detail: 'Create the project vehicle connecting government, licensor, EPC, operator, and capital partners.' },
+  { stage: '06', title: 'Green Utility', image: '/images/ppp-lifecycle/stage-06-green-utility.png', detail: 'Package the network as Green Utility infrastructure with climate, data, energy, and civic service value.' },
+  { stage: '07', title: 'Deployment', image: '/images/ppp-lifecycle/stage-07-deployment.png', detail: 'Install nodes as autonomous smart city infrastructure with local compute and revenue services online.' },
+  { stage: '08', title: 'Financial Close', image: '/images/ppp-lifecycle/stage-08-financial-close.png', detail: 'Close long-duration capital around operating infrastructure and Green Bond-style yield mechanics.' },
+];
+
+const bootSteps = [
+  'Loading iLamp background media...',
+  'Calibrating Living Grid geometry...',
+  'Activating NVIDIA Jetson data pulse...',
+  'Restoring sovereign infrastructure map...',
+];
+
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -485,6 +529,23 @@ function App() {
   const [activeUseCase, setActiveUseCase] = useState(0);
   const [activeMasterStep, setActiveMasterStep] = useState(0);
   const [viewMode, setViewMode] = useState<'r3f' | 'spline'>('r3f');
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [bootComplete, setBootComplete] = useState(false);
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(max <= 0 ? 0 : Math.min(window.scrollY / max, 1));
+    };
+
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
+  }, []);
 
   const scenario = scenarios[scenarioId];
   const selected = getPillar(selectedPillar);
@@ -685,6 +746,8 @@ function App() {
 
   return (
     <main className="app-shell">
+      {!bootComplete && <SystemBootOverlay onComplete={() => setBootComplete(true)} />}
+      <LivingGridBackdrop scrollProgress={scrollProgress} />
       <div className="ambient-grid" />
       <section className="hero-panel">
         <div className="hero-copy">
@@ -719,6 +782,8 @@ function App() {
           <MetricCard label="CO2 Reduced" value={`${formatNumber(co2Reduction)} t`} tone="violet" />
         </div>
       </section>
+
+      <VerifiedPartnerCarousel />
 
       <section className="control-ribbon" aria-label="Scenario controls">
         <label>
@@ -982,6 +1047,10 @@ function App() {
         </div>
       </section>
 
+      <ArticleHub />
+
+      <PPPRoadmap />
+
       <section className="bottom-grid">
         <div className="glass-card">
           <div className="section-heading">
@@ -1180,6 +1249,205 @@ function MetricCard({ label, value, tone }: { label: string; value: string; tone
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function SystemBootOverlay({ onComplete }: { onComplete: () => void }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (step >= bootSteps.length) {
+      const timer = window.setTimeout(onComplete, 320);
+      return () => window.clearTimeout(timer);
+    }
+
+    const timer = window.setTimeout(() => setStep((current) => current + 1), 420);
+    return () => window.clearTimeout(timer);
+  }, [onComplete, step]);
+
+  return (
+    <div className="boot-overlay" aria-live="polite">
+      <div className="boot-scanline" />
+      <div className="boot-console">
+        <span>iLamp boot sequence</span>
+        {bootSteps.map((item, index) => (
+          <p key={item} className={index === step ? 'active' : index < step ? 'complete' : ''}>
+            <b>{index < step ? 'OK' : index === step ? 'RUN' : 'WAIT'}</b>
+            {item}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LivingGridBackdrop({ scrollProgress }: { scrollProgress: number }) {
+  const pulseActive = scrollProgress >= 0.5;
+
+  return (
+    <div className="living-grid-backdrop" data-pulse-active={pulseActive ? 'true' : 'false'} aria-hidden="true">
+      <video className="background-video-layer" autoPlay muted loop playsInline preload="metadata">
+        <source src="/videos/background.webm" type="video/webm" />
+      </video>
+      <Canvas className="living-grid-canvas" camera={{ position: [0, 2.2, 8], fov: 48 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
+        <ambientLight intensity={0.4} />
+        <pointLight color="#3dd6ff" intensity={pulseActive ? 64 : 28} position={[0, 2.2, 1.2]} />
+        <LivingGridScene pulseActive={pulseActive} scrollProgress={scrollProgress} />
+      </Canvas>
+    </div>
+  );
+}
+
+function LivingGridScene({ pulseActive, scrollProgress }: { pulseActive: boolean; scrollProgress: number }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const pulseRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ camera, clock }) => {
+    const fly = THREE.MathUtils.clamp(scrollProgress, 0, 1);
+    camera.position.x = Math.sin(fly * Math.PI * 1.5) * 2.2;
+    camera.position.y = 2.2 + fly * 3.2;
+    camera.position.z = 8 - fly * 9.8;
+    camera.lookAt(0, 1.75, -1.8);
+
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.12) * 0.12;
+    }
+
+    if (pulseRef.current) {
+      const material = pulseRef.current.material as THREE.MeshBasicMaterial;
+      const pulse = pulseActive ? 1.4 + Math.sin(clock.elapsedTime * 2.4) * 0.35 : 0.18;
+      pulseRef.current.scale.setScalar(pulse);
+      material.opacity = pulseActive ? 0.22 + Math.sin(clock.elapsedTime * 2.4) * 0.08 : 0.04;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <gridHelper args={[44, 44, '#3dd6ff', '#123847']} position={[0, -1.2, -3]} />
+      <gridHelper args={[44, 22, '#36f6a7', '#102a28']} position={[0, -1.2, -3]} rotation={[0, 0, Math.PI / 2]} />
+      <group position={[0, -0.65, -1.2]}>
+        <mesh position={[0, 0.05, 0]}>
+          <cylinderGeometry args={[0.74, 0.96, 0.18, 48]} />
+          <meshStandardMaterial color="#263342" metalness={0.88} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 1.48, 0]}>
+          <cylinderGeometry args={[0.08, 0.13, 2.9, 40]} />
+          <meshStandardMaterial color="#223447" metalness={0.78} roughness={0.18} />
+        </mesh>
+        <mesh position={[0, 2.74, 0]}>
+          <cylinderGeometry args={[0.46, 0.4, 1.18, 64, 1, true]} />
+          <meshPhysicalMaterial color="#9deeff" transparent opacity={0.2} roughness={0.02} transmission={0.42} thickness={0.7} />
+        </mesh>
+        <mesh position={[0, 2.18, 0]}>
+          <boxGeometry args={[0.58, 0.42, 0.58]} />
+          <meshStandardMaterial color="#092436" emissive="#3dd6ff" emissiveIntensity={pulseActive ? 1.8 : 0.55} metalness={0.5} roughness={0.12} />
+        </mesh>
+        <mesh ref={pulseRef} position={[0, 2.18, 0]}>
+          <sphereGeometry args={[1.15, 48, 48]} />
+          <meshBasicMaterial color="#3dd6ff" transparent opacity={0.04} side={THREE.DoubleSide} />
+        </mesh>
+        {Array.from({ length: 6 }).map((_, index) => {
+          const angle = (index / 6) * Math.PI * 2;
+          return (
+            <mesh key={index} position={[Math.cos(angle) * 0.5, 2.48, Math.sin(angle) * 0.5]}>
+              <sphereGeometry args={[0.055, 18, 18]} />
+              <meshStandardMaterial color="#e8fbff" emissive="#3dd6ff" emissiveIntensity={pulseActive ? 1.2 : 0.35} />
+            </mesh>
+          );
+        })}
+        {[-1, 1].map((direction) => (
+          <group key={direction} position={[0, 3.8, 0]} rotation={[0, 0, direction * 0.6]}>
+            <mesh position={[0, 0.38, 0]}>
+              <cylinderGeometry args={[0.04, 0.058, 0.92, 24]} />
+              <meshStandardMaterial color="#2a4658" metalness={0.7} roughness={0.18} />
+            </mesh>
+            <mesh position={[0, 0.86, 0]}>
+              <boxGeometry args={[0.38, 0.12, 0.2]} />
+              <meshStandardMaterial color="#e8fbff" emissive="#3dd6ff" emissiveIntensity={0.5} />
+            </mesh>
+          </group>
+        ))}
+        {[0.78, 1.05, 1.36].map((radius, index) => (
+          <mesh key={radius} position={[0, 2.18, 0]} rotation={[Math.PI / 2, 0, index * 0.56]}>
+            <torusGeometry args={[radius, 0.006, 8, 120]} />
+            <meshBasicMaterial color={index === 1 ? '#36f6a7' : '#3dd6ff'} transparent opacity={pulseActive ? 0.28 : 0.12} />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
+
+function VerifiedPartnerCarousel() {
+  const loop = [...partnerLogos, ...partnerLogos];
+
+  return (
+    <section className="verified-carousel glass-card" aria-labelledby="partner-title">
+      <div className="section-heading">
+        <p>Verified Partner Signal</p>
+        <h2 id="partner-title">Source-integrated recognition, infrastructure, and sovereign deployment partners.</h2>
+      </div>
+      <div className="partner-marquee" aria-hidden="true">
+        {loop.map((partner, index) => (
+          <div className="partner-card" key={`${partner.name}-${index}`}>
+            {partner.src ? <img src={partner.src} alt="" loading="lazy" /> : <span className="partner-seal">SN</span>}
+            <strong>{partner.name}</strong>
+            <small>{partner.role}</small>
+          </div>
+        ))}
+      </div>
+      <ul className="sr-only">
+        {partnerLogos.map((partner) => (
+          <li key={partner.name}>{partner.name}: {partner.role}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ArticleHub() {
+  return (
+    <section className="article-hub" aria-labelledby="article-hub-title">
+      <div className="section-heading">
+        <p>SEO & Article Hub</p>
+        <h2 id="article-hub-title">Big-tech search targets for distributed AI infrastructure and sovereign data centers.</h2>
+        <span>Keywords: Distributed AI Infrastructure, 67 TOPS Edge Computing, Sovereign Data Centers.</span>
+      </div>
+      <div className="article-grid">
+        {articleHub.map((article) => (
+          <article key={article.title} className="glass-card article-card">
+            <span>{article.kicker}</span>
+            <h3>{article.title}</h3>
+            <strong>{article.metric}</strong>
+            <p>{article.summary}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PPPRoadmap() {
+  return (
+    <section className="ppp-roadmap" aria-labelledby="ppp-roadmap-title">
+      <div className="section-heading">
+        <p>PPP Step-by-Step</p>
+        <h2 id="ppp-roadmap-title">Eight-stage graphical roadmap from identification to financial close.</h2>
+        <span>Existing generated isometric graphics are preserved and framed with cyan data-flow overlays.</span>
+      </div>
+      <div className="ppp-stage-grid">
+        {pppStages.map((stage) => (
+          <article key={stage.stage} className="ppp-stage-card">
+            <div className="ppp-stage-visual">
+              <img src={stage.image} alt={`${stage.title} stage technical icon`} loading="lazy" />
+              <span>{stage.stage}</span>
+            </div>
+            <h3>{stage.title}</h3>
+            <p>{stage.detail}</p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
